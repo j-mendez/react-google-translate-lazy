@@ -27,7 +27,7 @@ const useTranslator = (): any => {
     }
   };
   
-  const setMessageListener = (_: any, cb?: () => any) => {
+  const setMessageListener = () => {
     if (typeof document !== "undefined") {
       const translateLoaded = document.querySelector(
         `script[data-name="lazy-google-translate"]`
@@ -35,17 +35,17 @@ const useTranslator = (): any => {
   
       if (translateLoaded) {
         loadTranslate();
-        return;
-      }
+      } else {
+        const script = document.createElement("script");
+        script.innerHTML = inlineTranslate;
+        script.dataset.name = "lazy-google-translate"
+        script.defer = true;
+        document.body.appendChild(script);
   
-      const script = document.createElement("script");
-      script.innerHTML = inlineTranslate;
-      script.dataset.name = "lazy-google-translate"
-      script.defer = true;
-      document.body.appendChild(script);
+        window?.addEventListener("message", receiveMessage, false);
+        script.addEventListener ("load", loadTranslate, false);
+      }
 
-      window?.addEventListener("message", receiveMessage, false);
-      script.addEventListener ("load", loadTranslate, false);
     }
   };
 

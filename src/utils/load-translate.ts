@@ -12,7 +12,6 @@ declare global {
   
   export function loadTranslate(cb?: any) {
     try {
-      Promise.resolve().then(() => {
         if (window?.google) {
           const layoutType = window?.innerWidth >= 800 ? 'SIMPLE' : 'vk'
   
@@ -39,7 +38,6 @@ declare global {
             })
           }
         }
-      })
     } catch (e) {
       console.error(e)
     } finally {

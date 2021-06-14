@@ -3,7 +3,7 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  **/
-import React, { memo, Fragment } from "react";
+import React, { memo, useCallback, Fragment } from "react";
 import { useTranslator, clickTranslate } from "./utils";
 import { GTranslateIcon } from "./icon";
 
@@ -34,10 +34,12 @@ const TranslateBadgeMain = ({
   className,
   classes,
   onClick,
+  component: Component,
 }: {
   onClick?(e?: any): any;
   className?: string;
   inline?: boolean;
+  component: any;
   classes?: {
     badge: any;
   };
@@ -46,20 +48,26 @@ const TranslateBadgeMain = ({
   const ariaT = "Translate page using google";
   const iconStyles = { color: "#959da5" };
 
-  async function onClickEvent(e: any): Promise<void> {
+  const onClickEvent = useCallback(async function onClickEvent(
+    e: any
+  ): Promise<void> {
+    e.persist();
     await setMessageListener(e);
-
     setTimeout(() => {
+      e.stopPropagation();
       clickTranslate(e);
       if (typeof onClick === "function") {
-        onClick(e);
+        onClick();
       }
     }, 220);
-  }
+  },
+  []);
+
+  const Container = Component ? Component : "button";
 
   if (inline) {
     return (
-      <button
+      <Container
         onClick={onClickEvent}
         onMouseEnter={setMessageListener}
         className={className}
@@ -69,13 +77,13 @@ const TranslateBadgeMain = ({
           <GTranslateIcon style={{ marginRight: 12, ...iconStyles }} />
           Translate
         </Fragment>
-      </button>
+      </Container>
     );
   }
 
   return (
     <Fragment>
-      <button
+      <Container
         onClick={onClickEvent}
         onMouseEnter={setMessageListener}
         aria-label={ariaT}
@@ -83,7 +91,7 @@ const TranslateBadgeMain = ({
         className={`${className}${className ? " " + classes?.badge ?? "" : ""}`}
       >
         <GTranslateIcon style={iconStyles} />
-      </button>
+      </Container>
       <div id="google_translate_element" style={styles.hidden} />
     </Fragment>
   );
