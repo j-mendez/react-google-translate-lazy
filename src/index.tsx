@@ -1,0 +1,1 @@
+export { TranslateBadge } from "./translate";
