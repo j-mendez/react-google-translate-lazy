@@ -3,95 +3,103 @@
  * This source code is licensed under the MIT license found in the
  * LICENSE file in the root directory of this source tree.
  **/
-import React, { memo, useCallback, Fragment } from "react";
+import React, { memo, Fragment, SyntheticEvent, FC } from "react";
 import { useTranslator, clickTranslate } from "./utils";
 import { GTranslateIcon } from "./icon";
 
-const styles = {
-  badge: {
-    marginLeft: 6,
-    marginRight: 6,
-    background: "none",
-    minWidth: 40,
-    minHeight: 40,
-    border: "none",
-  },
-  hidden: {
-    border: "none",
-    clip: "rect(1px 1px 1px 1px)",
-    clipPath: "inset(50%)",
-    margin: -1,
-    overflow: "hidden",
-    padding: 0,
-    position: "absolute",
-    width: 1,
-    height: 1,
-  } as any,
-};
+interface Props {
+  onClick?(e?: any): any;
+  className?: string;
+  inline?: boolean;
+  component?: FC | "button";
+  classes?: {
+    badge: any;
+  };
+  style?: React.CSSProperties;
+  containerStyle?: React.CSSProperties;
+}
 
 const TranslateBadgeMain = ({
   inline,
   className,
   classes,
   onClick,
-  component: Component,
-}: {
-  onClick?(e?: any): any;
-  className?: string;
-  inline?: boolean;
-  component: any;
-  classes?: {
-    badge: any;
-  };
-}) => {
+  component: Component = "button",
+  style,
+  containerStyle,
+}: Props) => {
   const { setMessageListener } = useTranslator();
   const ariaT = "Translate page using google";
-  const iconStyles = { color: "#959da5" };
+  const styles = {
+    badge: {
+      marginLeft: 6,
+      marginRight: 6,
+      background: "none",
+      border: "none",
+    },
+    hidden: {
+      border: "none",
+      clip: "rect(1px 1px 1px 1px)",
+      clipPath: "inset(50%)",
+      margin: -1,
+      overflow: "hidden",
+      padding: 0,
+      position: "absolute",
+      width: 1,
+      height: 1,
+    } as React.CSSProperties,
+  };
 
-  const onClickEvent = useCallback(async function onClickEvent(
-    e: any
-  ): Promise<void> {
-    e.persist();
+  const onClickEvent = async (e: SyntheticEvent): Promise<void> => {
     await setMessageListener(e);
     setTimeout(() => {
-      e.stopPropagation();
       clickTranslate(e);
       if (typeof onClick === "function") {
         onClick();
       }
-    }, 220);
-  },
-  []);
+    }, 240);
+  };
 
-  const Container = Component ? Component : "button";
+  const badgeClassName = classes?.badge ?? "";
+  const containerClasses = `${className ?? ""}${
+    className ? " " + badgeClassName : badgeClassName
+  }`;
+
+  const props = {
+    onClick: onClickEvent,
+    onMouseEnter: setMessageListener,
+    "aria-label": ariaT,
+    style: {
+      ...styles.badge,
+      ...containerStyle,
+    },
+    className: containerClasses,
+  };
 
   if (inline) {
     return (
-      <Container
-        onClick={onClickEvent}
-        onMouseEnter={setMessageListener}
-        className={className}
-        style={{ display: "flex", alignItems: "center", fontSize: "1.05rem" }}
+      <Component
+        {...props}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          fontSize: "1.05rem",
+          ...props.style,
+        }}
       >
         <Fragment>
-          <GTranslateIcon style={{ marginRight: 12, ...iconStyles }} />
+          <GTranslateIcon style={{ marginRight: 12, ...style }} />
           Translate
         </Fragment>
-      </Container>
+      </Component>
     );
   }
 
   return (
     <Fragment>
-      <Container
-        onClick={onClickEvent}
-        onMouseEnter={setMessageListener}
-        aria-label={ariaT}
-        style={styles.badge}
-        className={`${className}${className ? " " + classes?.badge ?? "" : ""}`}
-      >
-        <GTranslateIcon style={iconStyles} />
-      </Container>
+      <Component {...props}>
+        <GTranslateIcon style={style} />
+      </Component>
       <div id="google_translate_element" style={styles.hidden} />
     </Fragment>
   );
